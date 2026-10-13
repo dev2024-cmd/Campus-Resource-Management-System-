@@ -277,13 +277,23 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteResource = (resource: Resource) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      type: "resource",
-      id: resource._id,
-      title: resource.name,
-    });
+  const handleDeleteResource = (resource: Resource | string) => {
+    if (typeof resource === "string") {
+      const found = resources.find((r) => r._id === resource);
+      setDeleteConfirmation({
+        isOpen: true,
+        type: "resource",
+        id: resource,
+        title: found?.name || "Resource",
+      });
+    } else {
+      setDeleteConfirmation({
+        isOpen: true,
+        type: "resource",
+        id: resource._id,
+        title: resource.name,
+      });
+    }
   };
 
   const handleOpenEditResource = (resource: Resource) => {
@@ -312,13 +322,23 @@ const Dashboard: React.FC = () => {
   };
 
   // ----------------- Actions for Assignments -----------------
-  const handleDeleteAssignment = (assignment: Assignment) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      type: "assignment",
-      id: assignment._id,
-      title: assignment.name,
-    });
+  const handleDeleteAssignment = (assignment: Assignment | string) => {
+    if (typeof assignment === "string") {
+      const found = assignments.find((a) => a._id === assignment);
+      setDeleteConfirmation({
+        isOpen: true,
+        type: "assignment",
+        id: assignment,
+        title: found?.name || "Assignment",
+      });
+    } else {
+      setDeleteConfirmation({
+        isOpen: true,
+        type: "assignment",
+        id: assignment._id,
+        title: assignment.name,
+      });
+    }
   };
 
   const handleOpenEditAssignment = (assignment: Assignment) => {
@@ -540,7 +560,7 @@ const Dashboard: React.FC = () => {
                                   <Pencil size={16} />
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteResource(r._id)}
+                                  onClick={() => handleDeleteResource(r)}
                                   className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
                                   title="Delete"
                                 >
@@ -747,7 +767,7 @@ const Dashboard: React.FC = () => {
                                 <Pencil size={17} />
                               </button>
                               <button
-                                onClick={() => handleDeleteResource(resource._id)}
+                                onClick={() => handleDeleteResource(resource)}
                                 className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Delete Resource"
                               >
@@ -876,7 +896,7 @@ const Dashboard: React.FC = () => {
                                 <Pencil size={17} />
                               </button>
                               <button
-                                onClick={() => handleDeleteAssignment(assignment._id)}
+                                onClick={() => handleDeleteAssignment(assignment)}
                                 className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Delete Assignment"
                               >
@@ -1235,6 +1255,44 @@ const Dashboard: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. Delete Confirmation Modal */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in duration-200">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="text-lg font-bold text-gray-900">Confirm Deletion</h3>
+              <button
+                onClick={() => setDeleteConfirmation((prev) => ({ ...prev, isOpen: false }))}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-gray-900">"{deleteConfirmation.title}"</span>?
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3 pt-3 border-t">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmation((prev) => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold shadow"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

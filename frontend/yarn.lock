@@ -1522,9 +1522,11 @@ fraction.js@^4.3.7:
   dependencies:
     "@emotion/react" "^11.14.0"
     "@emotion/styled" "^11.14.0"
+    "@hookform/resolvers" "^5.9.1"
     "@mui/icons-material" "^6.4.7"
     "@mui/material" "^6.4.7"
     "@tailwindcss/vite" "^4.0.14"
+    "@tanstack/react-query" "^5.104.2"
     axios "^1.8.3"
     clsx "^2.1.1"
     concurrently "^9.1.2"
@@ -1533,9 +1535,11 @@ fraction.js@^4.3.7:
     react "^19.0.0"
     react-calendar "^5.1.0"
     react-dom "^19.0.0"
+    react-hook-form "^7.90.0"
     react-router-dom "^7.3.0"
     react-scripts "^0.0.0"
     react-toastify "^11.0.5"
+    zod "^4.6.7"
 
 function-bind@^1.1.2:
   version "1.1.2"

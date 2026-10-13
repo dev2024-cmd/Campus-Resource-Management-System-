@@ -1,0 +1,53 @@
+{
+  "name": "smart-campus-management-system",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch backend/src/server.ts",
+    "dev:backend": "tsx watch backend/src/server.ts",
+    "dev:legacy": "cd backend && nodemon",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "start": "tsx backend/src/server.ts",
+    "seed": "tsx backend/src/scripts/seed.ts",
+    "test": "vitest run backend/src/tests",
+    "test:watch": "vitest backend/src/tests",
+    "build:backend": "tsc -p backend/tsconfig.json",
+    "build:frontend": "npm run build --prefix frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.1",
+    "fs": "^0.0.1-security",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mailtrap": "^4.0.0",
+    "mongoose": "^8.12.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^1.14.10",
+    "path": "^0.12.7",
+    "pdfkit": "^0.16.0",
+    "react-datepicker": "^8.2.1",
+    "smart-campus-management-system": "file:",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.6.5",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Bell,
+  Clock,
   ShieldCheck,
   ChevronRight,
   Database,
@@ -21,6 +22,19 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import axios from "axios";
+
+interface NotificationItem {
+  _id: string;
+  title: string;
+  message: string;
+  type: "reminder" | "booking" | "event" | "maintenance" | "system";
+  resourceName?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  isRead: boolean;
+  createdAt: string;
+}
 
 interface NavItem {
   name: string;
@@ -36,6 +50,60 @@ export const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [notificationsList, setNotificationsList] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/notifications");
+      if (res.data?.data) {
+        setNotificationsList(res.data.data);
+        setUnreadCount(res.data.unreadCount ?? res.data.data.filter((n: any) => !n.isRead).length);
+      }
+    } catch (err) {
+      console.error("Error loading notifications in AppLayout:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await axios.patch(`http://localhost:5000/api/notifications/${id}/read`);
+      setNotificationsList((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error("Error marking notification read:", err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await axios.patch("http://localhost:5000/api/notifications/mark-all-read");
+      setNotificationsList((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      toast.success("All notifications marked as read");
+    } catch (err) {
+      console.error("Error marking all read:", err);
+    }
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/notifications/${id}`);
+      setNotificationsList((prev) => prev.filter((n) => n._id !== id));
+      toast.info("Notification dismissed");
+    } catch (err) {
+      console.error("Error dismissing notification:", err);
+    }
+  };
 
   const navigation: NavItem[] = [
     { name: "Executive Dashboard", path: "/dashboard", icon: <LayoutDashboard size={19} /> },
@@ -170,6 +238,124 @@ export const AppLayout: React.FC = () => {
             <span className="hidden sm:inline-flex px-2.5 py-1 text-xs font-semibold rounded-md bg-green-100 text-green-700 border border-green-200 uppercase tracking-wider font-mono">
               {user?.role || "Staff"}
             </span>
+
+            {/* Notification Bell & Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}
+                title="Notifications & Schedule Reminders"
+                className="relative p-2 rounded-full hover:bg-green-50 text-green-800 border border-green-200 transition-all flex items-center justify-center cursor-pointer shadow-sm hover:border-green-300"
+              >
+                <Bell size={18} className="text-green-700" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full shadow animate-pulse border border-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown Menu */}
+              {notificationDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setNotificationDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 max-h-[520px] bg-white rounded-2xl shadow-2xl border border-green-200 z-50 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                    <div className="p-3.5 px-4 border-b border-green-100 flex items-center justify-between bg-green-50/70">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-green-950 text-sm">Schedule Reminders</span>
+                        {unreadCount > 0 && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 border border-rose-200">
+                            {unreadCount} new
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={handleMarkAllAsRead}
+                            className="text-xs font-semibold text-green-700 hover:text-green-900 cursor-pointer"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setNotificationDropdownOpen(false)}
+                          className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="overflow-y-auto divide-y divide-green-50 max-h-[400px]">
+                      {notificationsList.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400 space-y-2">
+                          <Bell className="w-9 h-9 mx-auto text-green-200" />
+                          <p className="text-xs font-medium text-gray-600">No active notifications</p>
+                          <p className="text-[11px] text-gray-400">
+                            When your scheduled resource bookings or events conclude, reminders will appear here automatically.
+                          </p>
+                        </div>
+                      ) : (
+                        notificationsList.map((n) => (
+                          <div
+                            key={n._id}
+                            onClick={() => !n.isRead && handleMarkAsRead(n._id)}
+                            className={`p-3.5 hover:bg-green-50/50 transition-colors cursor-pointer flex items-start gap-3 ${
+                              !n.isRead ? "bg-amber-50/50" : "bg-white"
+                            }`}
+                          >
+                            <div
+                              className={`p-2 rounded-xl mt-0.5 shrink-0 ${
+                                n.type === "reminder"
+                                  ? "bg-amber-100 text-amber-700 border border-amber-200"
+                                  : "bg-green-100 text-green-700 border border-green-200"
+                              }`}
+                            >
+                              <Clock size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-xs font-bold text-gray-900 truncate">{n.title}</span>
+                                <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                  {n.createdAt
+                                    ? new Date(n.createdAt).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : "Just now"}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 mt-1 leading-relaxed">{n.message}</p>
+                              {(n.scheduledDate || n.scheduledTime) && (
+                                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-green-700 bg-green-50 border border-green-100 px-2 py-0.5 rounded w-fit">
+                                  <CalendarDays size={12} />
+                                  <span>
+                                    {n.scheduledDate} {n.scheduledTime && `• ${n.scheduledTime}`}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteNotification(n._id);
+                              }}
+                              className="text-gray-300 hover:text-rose-500 p-1 shrink-0 cursor-pointer"
+                              title="Dismiss"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Profile Menu Trigger */}
             <div className="relative">

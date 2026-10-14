@@ -53,6 +53,18 @@ interface Resource {
   status: string;
 }
 
+interface NotificationItem {
+  _id: string;
+  title: string;
+  message: string;
+  type: "reminder" | "booking" | "event" | "maintenance" | "system";
+  resourceName?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 const menuItems: MenuItem[] = [
   { name: "Dashboard", icon: <LayoutDashboard size={18} /> },
   { name: "Resources", icon: <FolderOpen size={18} /> },
@@ -112,13 +124,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) 
 };
 
 interface TopNavbarProps {
-  notifications: number;
+  notifications: NotificationItem[];
+  unreadCount: number;
   onRefresh: () => void;
+  onMarkAsRead: (id: string) => void;
+  onMarkAllAsRead: () => void;
+  onDeleteNotification: (id: string) => void;
 }
 
-const TopNavbar: React.FC<TopNavbarProps> = ({ notifications, onRefresh }) => {
+const TopNavbar: React.FC<TopNavbarProps> = ({
+  notifications,
+  unreadCount,
+  onRefresh,
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onDeleteNotification,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <header className="h-16 bg-white border-b border-gray-200 fixed top-0 right-0 left-64 z-20 flex justify-between items-center px-6">
+    <header className="h-16 bg-white border-b border-gray-200 fixed top-0 right-0 left-64 z-30 flex justify-between items-center px-6">
       <div className="text-sm text-gray-500 font-medium">
         Smart Campus Management System &bull; <span className="text-gray-800">Spring Term 2026</span>
       </div>
@@ -126,18 +151,117 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ notifications, onRefresh }) => {
       <div className="flex items-center space-x-4">
         <button
           onClick={onRefresh}
-          title="Refresh Data"
-          className="p-2 text-gray-600 hover:text-sky-600 hover:bg-gray-100 rounded-lg transition-colors"
+          title="Refresh Data & Reminders"
+          className="p-2 text-gray-600 hover:text-sky-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
         >
           <RefreshCw size={18} />
         </button>
 
-        <div className="relative cursor-pointer p-2 text-gray-600 hover:text-sky-600 hover:bg-gray-100 rounded-lg transition-colors">
-          <Bell size={20} />
-          {notifications > 0 && (
-            <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-              {notifications}
-            </span>
+        {/* Schedule Reminders & Notification Bell */}
+        <div className="relative">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            title="Schedule Reminders & Notifications"
+            className="relative cursor-pointer p-2 text-gray-600 hover:text-sky-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Interactive Notification Dropdown */}
+          {isOpen && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+
+              <div className="absolute right-0 mt-2 w-96 max-h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 flex flex-col overflow-hidden animate-in fade-in duration-150">
+                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900 text-sm">Notifications & Reminders</span>
+                    {unreadCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </div>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={onMarkAllAsRead}
+                      className="text-xs font-semibold text-sky-600 hover:text-sky-800 cursor-pointer"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+
+                <div className="overflow-y-auto divide-y divide-gray-100 max-h-[380px]">
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-gray-400 space-y-2">
+                      <Bell className="w-8 h-8 mx-auto text-gray-300" />
+                      <p className="text-xs font-medium text-gray-600">No active notifications</p>
+                      <p className="text-[11px] text-gray-400">
+                        When scheduled resource reservations or events finish, reminder alerts will automatically appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n._id}
+                        onClick={() => !n.isRead && onMarkAsRead(n._id)}
+                        className={`p-3.5 hover:bg-gray-50 transition-colors cursor-pointer flex items-start gap-3 ${
+                          !n.isRead ? "bg-amber-50/40" : "bg-white"
+                        }`}
+                      >
+                        <div
+                          className={`p-2 rounded-xl mt-0.5 shrink-0 ${
+                            n.type === "reminder"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-sky-100 text-sky-700"
+                          }`}
+                        >
+                          <Clock size={16} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-xs font-bold text-gray-900 truncate">{n.title}</span>
+                            <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                              {n.createdAt
+                                ? new Date(n.createdAt).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "Just now"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600 mt-1 leading-relaxed">{n.message}</p>
+                          {(n.scheduledDate || n.scheduledTime) && (
+                            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-gray-500 bg-gray-100/80 px-2 py-0.5 rounded w-fit">
+                              <CalendarIcon size={12} />
+                              <span>
+                                {n.scheduledDate} {n.scheduledTime && `• ${n.scheduledTime}`}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteNotification(n._id);
+                          }}
+                          className="text-gray-300 hover:text-red-500 p-1 shrink-0 cursor-pointer"
+                          title="Dismiss notification"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </div>
 
@@ -191,15 +315,62 @@ const Dashboard: React.FC = () => {
   });
 
   const [date, setDate] = useState<Date>(new Date());
-  const [notifications] = useState<number>(3);
+  const [notificationsList, setNotificationsList] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<string>("Dashboard");
   const [activeButton, setActiveButton] = useState<string>("Resources");
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/notifications");
+      if (res.data?.data) {
+        setNotificationsList(res.data.data);
+        setUnreadCount(res.data.unreadCount ?? res.data.data.filter((n: any) => !n.isRead).length);
+      }
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
+  };
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await axios.patch(`http://localhost:5000/api/notifications/${id}/read`);
+      setNotificationsList((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error("Error marking notification read:", err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await axios.patch("http://localhost:5000/api/notifications/mark-all-read");
+      setNotificationsList((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      toast.success("All notifications marked as read");
+    } catch (err) {
+      console.error("Error marking all read:", err);
+    }
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/notifications/${id}`);
+      setNotificationsList((prev) => prev.filter((n) => n._id !== id));
+      toast.info("Notification dismissed");
+    } catch (err) {
+      console.error("Error deleting notification:", err);
+    }
+  };
 
   const fetchData = async () => {
     try {
       const [assignmentsResponse, resourcesResponse] = await Promise.all([
         axios.get("http://localhost:5000/api/assignment"),
         axios.get("http://localhost:5000/api/resources"),
+        fetchNotifications(),
       ]);
 
       if (assignmentsResponse.data?.data) {
@@ -237,6 +408,9 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = () => {
@@ -395,7 +569,17 @@ const Dashboard: React.FC = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
       <div className="flex-1 ml-64 flex flex-col">
-        <TopNavbar notifications={notifications} onRefresh={fetchData} />
+        <TopNavbar
+          notifications={notificationsList}
+          unreadCount={unreadCount}
+          onRefresh={() => {
+            fetchData();
+            fetchNotifications();
+          }}
+          onMarkAsRead={handleMarkAsRead}
+          onMarkAllAsRead={handleMarkAllAsRead}
+          onDeleteNotification={handleDeleteNotification}
+        />
 
         <main className="p-8 pt-24 max-w-7xl w-full mx-auto flex-1">
           {/* ===================== TAB 1: DASHBOARD ===================== */}

@@ -15,6 +15,7 @@ import userRoutes from "./routes/user.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 import reportRoutes from "./routes/report.routes";
 import auditRoutes from "./routes/audit.routes";
+import notificationRoutes from "./routes/notification.routes";
 
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -25,7 +26,6 @@ const legacyLecturer = require("../routes/lecturer.route");
 const legacyStudent = require("../routes/student.route");
 const legacyEvent = require("../routes/event.route");
 const legacyAnnouncement = require("../routes/announcement.route");
-const legacyNotification = require("../routes/notification.route");
 const legacyShedule = require("../routes/shedule.route");
 
 const app = express();
@@ -96,6 +96,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/audit-logs", auditRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Backward-Compatibility Legacy Routes
 app.use("/api/administrator", legacySystemAdmin);
@@ -104,7 +105,7 @@ app.use("/api/lecturer", legacyLecturer);
 app.use("/api/student", legacyStudent);
 app.use("/api/event", legacyEvent);
 app.use("/api/announcement", legacyAnnouncement);
-app.use("/api/notification", legacyNotification);
+app.use("/api/notification", notificationRoutes);
 app.use("/api/shedule", legacyShedule);
 
 // Health Check

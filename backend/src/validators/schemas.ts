@@ -46,6 +46,9 @@ export const createLocationSchema = z.object({
   capacity: z.number().nonnegative().optional(),
   type: z.enum(["Academic", "Administrative", "Laboratory", "Auditorium", "Outdoor", "Other"]).optional(),
   notes: z.string().optional(),
+  directions: z.string().optional(),
+  gpsCoordinates: z.string().optional(),
+  mapUrl: z.string().optional(),
   isActive: z.boolean().optional(),
 });
 

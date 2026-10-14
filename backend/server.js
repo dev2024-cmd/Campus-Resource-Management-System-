@@ -5,18 +5,12 @@ const connectDB = require("./config/db");
 const systemAdministratorRoute = require("./routes/systemAdministrator.route");
 const AcademicOfficerRoute = require("./routes/academicOfficer.route");
 const LecturerRoute = require("./routes/lecturer.route");
-const AssignmentRoute = require("./routes/assignment.route");
 const ResourcesRoute = require("./routes/resource.route");
-const ResultsRoute = require("./routes/result.route");
 const studentRoute = require("./routes/student.route");
 const eventRoute = require("./routes/event.route");
-const courseRoute = require("./routes/course.route");
-const courseModuleRoute = require("./routes/courseModule.route");
 const announcement = require("./routes/announcement.route");
 const notification = require("./routes/notification.route");
 const shedule = require("./routes/shedule.route");
-const LectureMaterialRoutes = require("./routes/lectureMaterial.route");
-const AssignmentSubmitRoutes = require("./routes/assignmentSubmit.route");
 
 dotenv.config();
 
@@ -51,18 +45,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/administrator", systemAdministratorRoute);
 app.use("/api/student", studentRoute);
 app.use("/api/event", eventRoute);
-app.use("/api/course", courseRoute);
-app.use("/api/courseModule", courseModuleRoute);
 app.use("/api/announcement", announcement);
 app.use("/api/notification", notification);
 app.use("/api/shedule", shedule);
 app.use("/api/academicOfficer", AcademicOfficerRoute);
 app.use("/api/lecturer", LecturerRoute);
-app.use("/api/assignment", AssignmentRoute);
 app.use("/api/resources", ResourcesRoute);
-app.use("/api/results", ResultsRoute);
-app.use("/api/lectureMaterial", LectureMaterialRoutes);
-app.use("/api/assignmentSubmit", AssignmentSubmitRoutes);
 
 
 app.get("/", (req, res) => {

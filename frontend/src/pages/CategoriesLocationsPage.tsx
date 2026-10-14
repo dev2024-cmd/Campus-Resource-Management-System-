@@ -9,6 +9,8 @@ import {
   Building,
   RefreshCw,
   FolderOpen,
+  Compass,
+  Navigation,
 } from "lucide-react";
 import apiClient from "../services/api";
 import { Category, LocationItem } from "../types";
@@ -43,6 +45,9 @@ export const CategoriesLocationsPage: React.FC = () => {
     capacity: 40,
     type: "Academic",
     notes: "",
+    directions: "",
+    gpsCoordinates: "",
+    mapUrl: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,6 +139,9 @@ export const CategoriesLocationsPage: React.FC = () => {
       capacity: 40,
       type: "Academic",
       notes: "",
+      directions: "",
+      gpsCoordinates: "",
+      mapUrl: "",
     });
     setIsLocationModalOpen(true);
   };
@@ -148,6 +156,9 @@ export const CategoriesLocationsPage: React.FC = () => {
       capacity: loc.capacity || 0,
       type: loc.type || "Academic",
       notes: loc.notes || "",
+      directions: loc.directions || "",
+      gpsCoordinates: loc.gpsCoordinates || "",
+      mapUrl: loc.mapUrl || "",
     });
     setIsLocationModalOpen(true);
   };
@@ -311,6 +322,7 @@ export const CategoriesLocationsPage: React.FC = () => {
                   <th className="py-3.5 px-4 pl-6">Facility Name</th>
                   <th className="py-3.5 px-4">Building</th>
                   <th className="py-3.5 px-4">Floor & Room</th>
+                  <th className="py-3.5 px-4">GPS & Directions</th>
                   <th className="py-3.5 px-4">Type</th>
                   <th className="py-3.5 px-4 text-center">Capacity</th>
                   <th className="py-3.5 px-4 text-center">Linked Resources</th>
@@ -323,7 +335,31 @@ export const CategoriesLocationsPage: React.FC = () => {
                     <td className="py-3.5 px-4 pl-6 font-semibold text-slate-900">{loc.name}</td>
                     <td className="py-3.5 px-4 text-slate-700 font-medium">{loc.building}</td>
                     <td className="py-3.5 px-4 text-slate-600">
-                      {loc.floor || "Ground"} {loc.roomNumber ? `• ${loc.roomNumber}` : ""}
+                      <span className="inline-flex items-center gap-1 font-medium text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs">
+                        {loc.floor || "Ground"} {loc.roomNumber ? `• ${loc.roomNumber}` : ""}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-slate-600">
+                      {loc.directions ? (
+                        <div className="text-slate-800 font-medium mb-1 line-clamp-1" title={loc.directions}>
+                          🧭 {loc.directions}
+                        </div>
+                      ) : null}
+                      <a
+                        href={
+                          loc.mapUrl ||
+                          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            loc.gpsCoordinates || `${loc.name} ${loc.building} Campus`
+                          )}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded transition-colors"
+                        title="Open Campus GPS / Directions in Maps"
+                      >
+                        <Compass size={12} />
+                        <span>{loc.gpsCoordinates ? `GPS: ${loc.gpsCoordinates}` : "Open Map / GPS"}</span>
+                      </a>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">
@@ -502,6 +538,40 @@ export const CategoriesLocationsPage: React.FC = () => {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">GPS Coordinates</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 6.9271, 79.8612"
+                    value={locationForm.gpsCoordinates}
+                    onChange={(e) => setLocationForm({ ...locationForm, gpsCoordinates: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Map / Location URL</label>
+                  <input
+                    type="url"
+                    placeholder="e.g. https://maps.google.com/..."
+                    value={locationForm.mapUrl}
+                    onChange={(e) => setLocationForm({ ...locationForm, mapUrl: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Directions & Navigation Notes</label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Enter through West Entrance, take elevator to 2nd Floor, turn left next to Lab 3"
+                  value={locationForm.directions}
+                  onChange={(e) => setLocationForm({ ...locationForm, directions: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                ></textarea>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

@@ -22,17 +22,11 @@ import { errorHandler } from "./middleware/errorHandler";
 const legacySystemAdmin = require("../routes/systemAdministrator.route");
 const legacyAcademicOfficer = require("../routes/academicOfficer.route");
 const legacyLecturer = require("../routes/lecturer.route");
-const legacyAssignment = require("../routes/assignment.route");
-const legacyResults = require("../routes/result.route");
 const legacyStudent = require("../routes/student.route");
 const legacyEvent = require("../routes/event.route");
-const legacyCourse = require("../routes/course.route");
-const legacyCourseModule = require("../routes/courseModule.route");
 const legacyAnnouncement = require("../routes/announcement.route");
 const legacyNotification = require("../routes/notification.route");
 const legacyShedule = require("../routes/shedule.route");
-const legacyLectureMaterial = require("../routes/lectureMaterial.route");
-const legacyAssignmentSubmit = require("../routes/assignmentSubmit.route");
 
 const app = express();
 
@@ -107,17 +101,11 @@ app.use("/api/audit-logs", auditRoutes);
 app.use("/api/administrator", legacySystemAdmin);
 app.use("/api/academicOfficer", legacyAcademicOfficer);
 app.use("/api/lecturer", legacyLecturer);
-app.use("/api/assignment", legacyAssignment);
-app.use("/api/results", legacyResults);
 app.use("/api/student", legacyStudent);
 app.use("/api/event", legacyEvent);
-app.use("/api/course", legacyCourse);
-app.use("/api/courseModule", legacyCourseModule);
 app.use("/api/announcement", legacyAnnouncement);
 app.use("/api/notification", legacyNotification);
 app.use("/api/shedule", legacyShedule);
-app.use("/api/lectureMaterial", legacyLectureMaterial);
-app.use("/api/assignmentSubmit", legacyAssignmentSubmit);
 
 // Health Check
 app.get("/api/health", (req: Request, res: Response) => {

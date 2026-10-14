@@ -60,6 +60,9 @@ export interface LocationItem {
   capacity?: number;
   type: string;
   notes?: string;
+  directions?: string;
+  gpsCoordinates?: string;
+  mapUrl?: string;
   isActive: boolean;
   resourceCount?: number;
   createdAt?: string;

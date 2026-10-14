@@ -8,6 +8,9 @@ export interface ILocation extends Document {
   capacity?: number;
   type: "Academic" | "Administrative" | "Laboratory" | "Auditorium" | "Outdoor" | "Other";
   notes?: string;
+  directions?: string;
+  gpsCoordinates?: string;
+  mapUrl?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -47,6 +50,21 @@ const LocationSchema = new Schema<ILocation>(
       default: "Academic",
     },
     notes: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    directions: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    gpsCoordinates: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    mapUrl: {
       type: String,
       trim: true,
       default: "",
